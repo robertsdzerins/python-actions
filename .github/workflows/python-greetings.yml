@@ -2,315 +2,101 @@ name: Python Greetings Delivery Pipeline
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   install-pip-deps:
-    name: Install Python Dependencies
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     steps:
-      - name: Checkout pipeline repository (python-actions)
+      - name: Checkout pipeline definition
         uses: actions/checkout@v4
 
-      - name: Clone python-greetings repository
+      - name: Checkout python-greetings repository
         uses: actions/checkout@v4
         with:
           repository: mtararujs/python-greetings
           path: python-greetings
 
-      - name: Installing required dependencies...
-        shell: powershell
+      - name: Install pip dependencies
+        working-directory: python-greetings
         run: |
-          Write-Output "Installing all required dependencies in python-greetings directory..."
-          Set-Location "python-greetings"
+          echo "Installing all required dependencies..."
           pip3 install -r requirements.txt
 
   deploy-to-dev:
-    name: Deploy to DEV Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: install-pip-deps
     steps:
-    - name: Checkout pipeline repository (python-actions)
-      uses: actions/checkout@v4
-
-    - name: Clone python-greetings repository
-      uses: actions/checkout@v4
-      with:
-        repository: mtararujs/python-greetings
-        path: python-greetings
-
-    - name: Stop existing DEV service (if any)
-      shell: powershell
-      run: |
-        Write-Output "Stopping DEV service (if running)..."
-        Set-Location "python-greetings"
-        # Pārbauda, vai PM2 sarakstā ir process "greetings-app-dev"
-        $processExists = pm2 list | Select-String "greetings-app-dev"
-        if ($processExists) {
-            Write-Output "Process found, deleting it..."
-            pm2 delete greetings-app-dev
-        }
-        else {
-            Write-Output "DEV service not running, ignoring error."
-        }
-
-    - name: Start DEV service
-      shell: powershell
-      run: |
-        Write-Output "Starting DEV service on port 7001..."
-        Set-Location "python-greetings"
-        pm2 start app.py --name greetings-app-dev --interpreter=python -- --port 7001
-
+      - name: Deploy to dev environment
+        uses: ./.github/actions/deploy/deploy.yml
+        with:
+          environment: dev
+          port: 7001
 
   tests-on-dev:
-    name: Run tests on DEV Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: deploy-to-dev
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone course-js-api-framework repository
-        uses: actions/checkout@v4
+      - name: Test on dev environment
+        uses: ./.github/actions/test/test.yml
         with:
-          repository: mtararujs/course-js-api-framework
-          path: course-js-api-framework
-
-      - name: Install test dependencies for DEV
-        shell: powershell
-        run: |
-          Write-Output "Installing test dependencies in course-js-api-framework directory..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm install
-          }
-          catch {
-              Write-Output "npm install failed, but continuing..."
-          }
-
-      - name: Run DEV tests
-        shell: powershell
-        run: |
-          Write-Output "Running DEV tests..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm run greetings greetings_dev
-          }
-          catch {
-              Write-Output "DEV tests failed, but continuing..."
-          }
+          environment: dev
 
   deploy-to-staging:
-    name: Deploy to STAGING Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: tests-on-dev
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone python-greetings repository
-        uses: actions/checkout@v4
+      - name: Deploy to staging environment
+        uses: ./.github/actions/deploy/deploy.yml
         with:
-          repository: mtararujs/python-greetings
-          path: python-greetings
-
-      - name: Stop existing STAGING service (if any)
-        shell: powershell
-        run: |
-          Write-Output "Stopping STAGING service (if running)..."
-          Set-Location "python-greetings"
-          try {
-              pm2 delete greetings-app-staging
-          }
-          catch {
-              Write-Output "STAGING service not running, ignoring error."
-          }
-
-      - name: Start STAGING service
-        shell: powershell
-        run: |
-          Write-Output "Starting STAGING service on port 7002..."
-          Set-Location "python-greetings"
-          pm2 start app.py --name greetings-app-staging -- --port 7002
+          environment: staging
+          port: 7002
 
   tests-on-staging:
-    name: Run tests on STAGING Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: deploy-to-staging
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone course-js-api-framework repository
-        uses: actions/checkout@v4
+      - name: Test on staging environment
+        uses: ./.github/actions/test/test.yml
         with:
-          repository: mtararujs/course-js-api-framework
-          path: course-js-api-framework
-
-      - name: Install test dependencies for STAGING
-        shell: powershell
-        run: |
-          Write-Output "Installing test dependencies in course-js-api-framework directory for STAGING..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm install
-          }
-          catch {
-              Write-Output "npm install failed, but continuing..."
-          }
-
-      - name: Run STAGING tests
-        shell: powershell
-        run: |
-          Write-Output "Running STAGING tests..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm run greetings greetings_staging
-          }
-          catch {
-              Write-Output "STAGING tests failed, but continuing..."
-          }
+          environment: staging
 
   deploy-to-preprod:
-    name: Deploy to PREPROD Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: tests-on-staging
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone python-greetings repository
-        uses: actions/checkout@v4
+      - name: Deploy to preprod environment
+        uses: ./.github/actions/deploy/deploy.yml
         with:
-          repository: mtararujs/python-greetings
-          path: python-greetings
-
-      - name: Stop existing PREPROD service (if any)
-        shell: powershell
-        run: |
-          Write-Output "Stopping PREPROD service (if running)..."
-          Set-Location "python-greetings"
-          try {
-              pm2 delete greetings-app-preprod
-          }
-          catch {
-              Write-Output "PREPROD service not running, ignoring error."
-          }
-
-      - name: Start PREPROD service
-        shell: powershell
-        run: |
-          Write-Output "Starting PREPROD service on port 7003..."
-          Set-Location "python-greetings"
-          pm2 start app.py --name greetings-app-preprod -- --port 7003
+          environment: preprod
+          port: 7003
 
   tests-on-preprod:
-    name: Run tests on PREPROD Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: deploy-to-preprod
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone course-js-api-framework repository
-        uses: actions/checkout@v4
+      - name: Test on preprod environment
+        uses: ./.github/actions/test/test.yml
         with:
-          repository: mtararujs/course-js-api-framework
-          path: course-js-api-framework
-
-      - name: Install test dependencies for PREPROD
-        shell: powershell
-        run: |
-          Write-Output "Installing test dependencies in course-js-api-framework directory for PREPROD..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm install
-          }
-          catch {
-              Write-Output "npm install failed, but continuing..."
-          }
-
-      - name: Run PREPROD tests
-        shell: powershell
-        run: |
-          Write-Output "Running PREPROD tests..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm run greetings greetings_preprod
-          }
-          catch {
-              Write-Output "PREPROD tests failed, but continuing..."
-          }
+          environment: preprod
 
   deploy-to-prod:
-    name: Deploy to PROD Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: tests-on-preprod
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone python-greetings repository
-        uses: actions/checkout@v4
+      - name: Deploy to prod environment
+        uses: ./.github/actions/deploy/deploy.yml
         with:
-          repository: mtararujs/python-greetings
-          path: python-greetings
-
-      - name: Stop existing PROD service (if any)
-        shell: powershell
-        run: |
-          Write-Output "Stopping PROD service (if running)..."
-          Set-Location "python-greetings"
-          try {
-              pm2 delete greetings-app-prod
-          }
-          catch {
-              Write-Output "PROD service not running, ignoring error."
-          }
-
-      - name: Start PROD service
-        shell: powershell
-        run: |
-          Write-Output "Starting PROD service on port 7004..."
-          Set-Location "python-greetings"
-          pm2 start app.py --name greetings-app-prod -- --port 7004
+          environment: prod
+          port: 7004
 
   tests-on-prod:
-    name: Run tests on PROD Environment
-    runs-on: [self-hosted]
+    runs-on: self-hosted
     needs: deploy-to-prod
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
-
-      - name: Clone course-js-api-framework repository
-        uses: actions/checkout@v4
+      - name: Test on prod environment
+        uses: ./.github/actions/test/test.yml
         with:
-          repository: mtararujs/course-js-api-framework
-          path: course-js-api-framework
-
-      - name: Install test dependencies for PROD
-        shell: powershell
-        run: |
-          Write-Output "Installing test dependencies in course-js-api-framework directory for PROD..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm install
-          }
-          catch {
-              Write-Output "npm install failed, but continuing..."
-          }
-
-      - name: Run PROD tests
-        shell: powershell
-        run: |
-          Write-Output "Running PROD tests..."
-          Set-Location "course-js-api-framework"
-          try {
-              npm run greetings greetings_prod
-          }
-          catch {
-              Write-Output "PROD tests failed, but continuing..."
-          }
+          environment: prod
