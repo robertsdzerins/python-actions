@@ -17,10 +17,9 @@ runs:
         path: ${{ inputs.working-directory }}
 
     - name: Deploying application to ${{ inputs.env-name }}
-      shell: bash
+      shell: cmd
       working-directory: ${{ inputs.working-directory }}
       run: |
-        echo "Deploying to ${{ inputs.env-name }} environment..."
-        pm2 delete greetings-app-${{ inputs.env-name }} || true
+        echo Deploying to ${{ inputs.env-name }} environment...
+        pm2 delete greetings-app-${{ inputs.env-name }} & EXIT /B 0
         pm2 start app.py --name greetings-app-${{ inputs.env-name }} -- --port ${{ inputs.port }}
-
