@@ -15,16 +15,15 @@ runs:
         path: ${{ inputs.working-directory }}
 
     - name: Install Node dependencies
-      shell: bash
+      shell: cmd
       working-directory: ${{ inputs.working-directory }}
       run: |
-        echo "Installing test framework dependencies..."
+        echo Installing test framework dependencies...
         npm install
 
     - name: Running tests on ${{ inputs.env-name }}
-      shell: bash
+      shell: cmd
       working-directory: ${{ inputs.working-directory }}
       run: |
-        echo "Running tests on ${{ inputs.env-name }} environment..."
+        echo Running tests on ${{ inputs.env-name }} environment...
         npm run greetings greetings_${{ inputs.env-name }}
-
