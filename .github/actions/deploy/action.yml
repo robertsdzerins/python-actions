@@ -21,8 +21,8 @@ runs:
 
     - name: Deploy to ${{ inputs.environment }} environment
       working-directory: python-greetings
+      shell: bash
       run: |
         echo "Deploying to ${{ inputs.environment }} environment..."
-        # Apstādinam esošo servisu; Unix sistēmā izmanto '|| true' lai neapturētu workflow
         pm2 delete greetings-app-${{ inputs.environment }} || true
         pm2 start app.py --name greetings-app-${{ inputs.environment }} -- --port ${{ inputs.port }}
