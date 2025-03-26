@@ -46,13 +46,14 @@ jobs:
       run: |
         Write-Output "Stopping DEV service (if running)..."
         Set-Location "python-greetings"
-        # Piespiedām PowerShell izsaukt kļūdu, ja komanda neizdodas.
-        $ErrorActionPreference = 'Stop'
-        try {
+        # Pārbauda, vai PM2 sarakstā ir process "greetings-app-dev"
+        $processExists = pm2 list | Select-String "greetings-app-dev"
+        if ($processExists) {
+            Write-Output "Process found, deleting it..."
             pm2 delete greetings-app-dev
         }
-        catch {
-            Write-Output "DEV service not found, ignoring error."
+        else {
+            Write-Output "DEV service not running, ignoring error."
         }
 
     - name: Start DEV service
@@ -61,6 +62,7 @@ jobs:
         Write-Output "Starting DEV service on port 7001..."
         Set-Location "python-greetings"
         pm2 start app.py --name greetings-app-dev -- --port 7001
+
 
   tests-on-dev:
     name: Run tests on DEV Environment
