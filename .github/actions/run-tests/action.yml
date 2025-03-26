@@ -20,6 +20,7 @@ runs:
       run: |
         echo Installing test framework dependencies...
         npm install
+        npm install cross-env
 
     - name: Running tests on ${{ inputs.env-name }}
       shell: cmd
@@ -27,4 +28,3 @@ runs:
       run: |
         echo Running tests on ${{ inputs.env-name }} environment...
         npx cross-env global.env=${{ inputs.env-name }} mocha tests/scenarios/greetings/*.js --reporter mochawesome --timeout 20000
-
