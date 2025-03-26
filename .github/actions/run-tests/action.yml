@@ -26,4 +26,4 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         echo Running tests on ${{ inputs.env-name }} environment...
-        set global.env=${{ inputs.env-name }}&& npx mocha tests/scenarios/greetings/*.js --reporter mochawesome --timeout 20000
+        node -e "global.env='${{ inputs.env-name }}'; require('child_process').execSync('npx mocha tests/scenarios/greetings/*.js --reporter mochawesome --timeout 20000', {stdio:'inherit'})"
