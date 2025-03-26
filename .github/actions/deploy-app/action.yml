@@ -1,1 +1,26 @@
+name: 'Deploy App'
+description: 'Deploys Python application using PM2'
+inputs:
+  working-directory:
+    required: true
+  env-name:
+    required: true
+  port:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Checkout Python Greetings repo
+      uses: actions/checkout@v4
+      with:
+        repository: 'mtararujs/python-greetings'
+        path: ${{ inputs.working-directory }}
+
+    - name: Deploying application to ${{ inputs.env-name }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Deploying to ${{ inputs.env-name }} environment..."
+        pm2 delete greetings-app-${{ inputs.env-name }} || true
+        pm2 start app.py --name greetings-app-${{ inputs.env-name }} -- --port ${{ inputs.port }}
 
