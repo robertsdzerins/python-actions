@@ -26,4 +26,5 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         echo Running tests on ${{ inputs.env-name }} environment...
-        npm run greetings greetings_${{ inputs.env-name }}
+        npm run greetings_${{ inputs.env-name }}
+
