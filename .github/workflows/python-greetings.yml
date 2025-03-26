@@ -10,7 +10,7 @@ jobs:
     name: Install Python Dependencies
     runs-on: [self-hosted]
     steps:
-      # 1. Izmanto pašreizējo repozitoriju (python-actions) – šeit glabājas tikai workflow definīcija
+      
       - name: Checkout pipeline repository (python-actions)
         uses: actions/checkout@v4
 
