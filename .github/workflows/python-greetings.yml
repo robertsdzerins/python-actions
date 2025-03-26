@@ -40,15 +40,12 @@ jobs:
           repository: mtararujs/python-greetings
           path: python-greetings
       - name: Stop existing DEV service (if any)
+        shell: pwsh
+        continue-on-error: true
         run: |
           echo "Stopping DEV service (if running)..."
           cd python-greetings
-          pm2 delete greetings-app-dev || true
-      - name: Start DEV service
-        run: |
-          echo "Starting DEV service on port 7001..."
-          cd python-greetings
-          pm2 start app.py --name greetings-app-dev -- --port 7001 || true
+          pm2 delete greetings-app-dev
 
   tests-on-dev:
     name: Run tests on DEV Environment
@@ -74,10 +71,3 @@ jobs:
           npm run greetings greetings_dev || true
 
   # ... (pievieno pārējus jobus ar līdzīgām izmaiņām)..
-
-  simple-test:
-    name: Simple Test Job
-    runs-on: [self-hosted]
-    steps:
-      - name: Echo Hello
-        run: echo "Hello, world!"
