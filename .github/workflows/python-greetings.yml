@@ -30,7 +30,7 @@ jobs:
     needs: install-pip-deps
     steps:
       - name: Deploy to dev environment
-        uses: ./.github/actions/deploy/deploy.yml
+        uses: ./.github/actions/deploy
         with:
           environment: dev
           port: 7001
@@ -40,7 +40,7 @@ jobs:
     needs: deploy-to-dev
     steps:
       - name: Test on dev environment
-        uses: ./.github/actions/test/test.yml
+        uses: ./.github/actions/test
         with:
           environment: dev
 
@@ -49,7 +49,7 @@ jobs:
     needs: tests-on-dev
     steps:
       - name: Deploy to staging environment
-        uses: ./.github/actions/deploy/deploy.yml
+        uses: ./.github/actions/deploy
         with:
           environment: staging
           port: 7002
@@ -59,7 +59,7 @@ jobs:
     needs: deploy-to-staging
     steps:
       - name: Test on staging environment
-        uses: ./.github/actions/test/test.yml
+        uses: ./.github/actions/test
         with:
           environment: staging
 
@@ -68,7 +68,7 @@ jobs:
     needs: tests-on-staging
     steps:
       - name: Deploy to preprod environment
-        uses: ./.github/actions/deploy/deploy.yml
+        uses: ./.github/actions/deploy
         with:
           environment: preprod
           port: 7003
@@ -78,7 +78,7 @@ jobs:
     needs: deploy-to-preprod
     steps:
       - name: Test on preprod environment
-        uses: ./.github/actions/test/test.yml
+        uses: ./.github/actions/test
         with:
           environment: preprod
 
@@ -87,7 +87,7 @@ jobs:
     needs: tests-on-preprod
     steps:
       - name: Deploy to prod environment
-        uses: ./.github/actions/deploy/deploy.yml
+        uses: ./.github/actions/deploy
         with:
           environment: prod
           port: 7004
@@ -97,6 +97,6 @@ jobs:
     needs: deploy-to-prod
     steps:
       - name: Test on prod environment
-        uses: ./.github/actions/test/test.yml
+        uses: ./.github/actions/test
         with:
           environment: prod
