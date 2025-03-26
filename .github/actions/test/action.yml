@@ -18,6 +18,7 @@ runs:
 
     - name: Run tests on ${{ inputs.environment }} environment
       working-directory: course-js-api-framework
+      shell: bash
       run: |
         echo "Running tests on ${{ inputs.environment }} environment..."
         npm install
