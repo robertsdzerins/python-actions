@@ -26,4 +26,5 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         echo Running tests on ${{ inputs.env-name }} environment...
-        npx mocha tests/scenarios/greetings/*.js --reporter mochawesome --timeout 20000
+        npx cross-env global.env=${{ inputs.env-name }} mocha tests/scenarios/greetings/*.js --reporter mochawesome --timeout 20000
+
