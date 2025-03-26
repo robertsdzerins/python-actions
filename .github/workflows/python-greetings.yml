@@ -12,17 +12,15 @@ jobs:
     steps:
       - name: Checkout pipeline definition
         uses: actions/checkout@v4
-
       - name: Checkout python-greetings repository
         uses: actions/checkout@v4
         with:
           repository: mtararujs/python-greetings
           path: python-greetings
-
       - name: Install pip dependencies
         working-directory: python-greetings
         run: |
-          echo "Installing all required dependencies..."
+          echo "Installing required dependencies..."
           pip3 install -r requirements.txt
 
   deploy-to-dev:
@@ -34,6 +32,7 @@ jobs:
         with:
           environment: dev
           port: 7001
+
 
   tests-on-dev:
     runs-on: self-hosted
