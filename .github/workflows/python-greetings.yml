@@ -1,101 +1,116 @@
-name: Python Greetings Delivery Pipeline
+name: Python Greetings CI/CD
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   install-pip-deps:
     runs-on: self-hosted
     steps:
-      - name: Checkout pipeline definition
+      - name: Checkout main repo
         uses: actions/checkout@v4
-      - name: Checkout python-greetings repository
-        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/install-deps
         with:
-          repository: mtararujs/python-greetings
-          path: python-greetings
-      - name: Install pip dependencies
-        working-directory: python-greetings
-        run: |
-          echo "Installing required dependencies..."
-          pip3 install -r requirements.txt
+          working-directory: 'python-greetings'
 
   deploy-to-dev:
-    runs-on: self-hosted
     needs: install-pip-deps
+    runs-on: self-hosted
     steps:
-      - name: Deploy to dev environment
-        uses: ./.github/actions/deploy
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/deploy-app
         with:
-          environment: dev
-          port: 7001
-
+          working-directory: 'python-greetings'
+          env-name: 'dev'
+          port: '7001'
 
   tests-on-dev:
-    runs-on: self-hosted
     needs: deploy-to-dev
+    runs-on: self-hosted
     steps:
-      - name: Test on dev environment
-        uses: ./.github/actions/test
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+
+      - uses: ./.github/actions/run-tests
         with:
-          environment: dev
+          working-directory: 'js-api-framework'
+          env-name: 'dev'
 
   deploy-to-staging:
-    runs-on: self-hosted
     needs: tests-on-dev
+    runs-on: self-hosted
     steps:
-      - name: Deploy to staging environment
-        uses: ./.github/actions/deploy
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/deploy-app
         with:
-          environment: staging
-          port: 7002
+          working-directory: 'python-greetings'
+          env-name: 'staging'
+          port: '7002'
 
   tests-on-staging:
-    runs-on: self-hosted
     needs: deploy-to-staging
+    runs-on: self-hosted
     steps:
-      - name: Test on staging environment
-        uses: ./.github/actions/test
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/run-tests
         with:
-          environment: staging
+          working-directory: 'js-api-framework'
+          env-name: 'staging'
 
   deploy-to-preprod:
-    runs-on: self-hosted
     needs: tests-on-staging
+    runs-on: self-hosted
     steps:
-      - name: Deploy to preprod environment
-        uses: ./.github/actions/deploy
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/deploy-app
         with:
-          environment: preprod
-          port: 7003
+          working-directory: 'python-greetings'
+          env-name: 'preprod'
+          port: '7003'
 
   tests-on-preprod:
-    runs-on: self-hosted
     needs: deploy-to-preprod
+    runs-on: self-hosted
     steps:
-      - name: Test on preprod environment
-        uses: ./.github/actions/test
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/run-tests
         with:
-          environment: preprod
+          working-directory: 'js-api-framework'
+          env-name: 'preprod'
 
   deploy-to-prod:
-    runs-on: self-hosted
     needs: tests-on-preprod
+    runs-on: self-hosted
     steps:
-      - name: Deploy to prod environment
-        uses: ./.github/actions/deploy
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/deploy-app
         with:
-          environment: prod
-          port: 7004
+          working-directory: 'python-greetings'
+          env-name: 'prod'
+          port: '7004'
 
   tests-on-prod:
-    runs-on: self-hosted
     needs: deploy-to-prod
+    runs-on: self-hosted
     steps:
-      - name: Test on prod environment
-        uses: ./.github/actions/test
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+      
+      - uses: ./.github/actions/run-tests
         with:
-          environment: prod
+          working-directory: 'js-api-framework'
+          env-name: 'prod'
