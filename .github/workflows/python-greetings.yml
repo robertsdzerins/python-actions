@@ -7,6 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  test-job:
+    name: Simple Test
+    runs-on: [self-hosted]
+    steps:
+    - name: Echo Hello
+      run: echo "Hello, world!"
+
   install-pip-deps:
     name: Install Python Dependencies
     runs-on: [self-hosted]
