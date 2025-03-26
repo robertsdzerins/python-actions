@@ -19,10 +19,13 @@ jobs:
           repository: mtararujs/python-greetings
           path: python-greetings
       - name: Installing required dependencies...
+        continue-on-error: true
+        shell: pwsh
         run: |
-          echo "Installing all required dependencies in python-greetings directory...."
+          echo "Installing all required dependencies in python-greetings directory..."
           cd python-greetings
-          pip3 install -r requirements.txt || true
+          pip3 install -r requirements.txt
+
 
   deploy-to-dev:
     name: Deploy to DEV Environment
