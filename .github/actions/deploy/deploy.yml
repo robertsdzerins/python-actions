@@ -1,0 +1,28 @@
+name: 'Deploy Action'
+description: 'Composite action to deploy the python-greetings app'
+inputs:
+  environment:
+    description: 'Deployment environment (dev, staging, preprod, prod)'
+    required: true
+  port:
+    description: 'Port number'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout pipeline definition
+      uses: actions/checkout@v4
+
+    - name: Checkout python-greetings repository
+      uses: actions/checkout@v4
+      with:
+        repository: mtararujs/python-greetings
+        path: python-greetings
+
+    - name: Deploy to ${{ inputs.environment }} environment
+      working-directory: python-greetings
+      run: |
+        echo "Deploying to ${{ inputs.environment }} environment..."
+        # Apstādinam esošo servisu; Unix sistēmā izmanto '|| true' lai neapturētu workflow
+        pm2 delete greetings-app-${{ inputs.environment }} || true
+        pm2 start app.py --name greetings-app-${{ inputs.environment }} -- --port ${{ inputs.port }}
