@@ -21,8 +21,8 @@ runs:
 
     - name: Deploy to ${{ inputs.environment }} environment
       working-directory: python-greetings
-      shell: bash
+      shell: cmd
       run: |
-        echo "Deploying to ${{ inputs.environment }} environment.."
-        pm2 delete greetings-app-${{ inputs.environment }} || true
+        echo Deploying to %INPUT_environment% environment...
+        pm2 delete greetings-app-${{ inputs.environment }} || echo Service not found
         pm2 start app.py --name greetings-app-${{ inputs.environment }} -- --port ${{ inputs.port }}
