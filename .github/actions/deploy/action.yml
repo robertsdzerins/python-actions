@@ -19,13 +19,19 @@ runs:
         repository: mtararujs/python-greetings
         path: python-greetings
 
-    - name: Deploy to $env:INPUT_ENVIRONMENT environment
+    - name: Debug Inputs
+      shell: powershell
+      run: |
+        Write-Output "INPUT_ENVIRONMENT: $env:INPUT_ENVIRONMENT"
+        Write-Output "INPUT_PORT: $env:INPUT_PORT"
+
+    - name: Deploy Application
       working-directory: python-greetings
       shell: powershell
       run: |
         Write-Output "Deploying to $env:INPUT_ENVIRONMENT environment..."
         pm2 delete "greetings-app-$env:INPUT_ENVIRONMENT"
         if ($LASTEXITCODE -ne 0) {
-            Write-Output "Service not found"
+            Write-Output "Service not found, continuing..."
         }
         pm2 start app.py --name "greetings-app-$env:INPUT_ENVIRONMENT" -- --port $env:INPUT_PORT
