@@ -32,33 +32,35 @@ jobs:
     runs-on: [self-hosted]
     needs: install-pip-deps
     steps:
-      - name: Checkout pipeline repository (python-actions)
-        uses: actions/checkout@v4
+    - name: Checkout pipeline repository (python-actions)
+      uses: actions/checkout@v4
 
-      - name: Clone python-greetings repository
-        uses: actions/checkout@v4
-        with:
-          repository: mtararujs/python-greetings
-          path: python-greetings
+    - name: Clone python-greetings repository
+      uses: actions/checkout@v4
+      with:
+        repository: mtararujs/python-greetings
+        path: python-greetings
 
-      - name: Stop existing DEV service (if any)
-        shell: powershell
-        run: |
-          Write-Output "Stopping DEV service (if running)..."
-          Set-Location "python-greetings"
-          try {
-              pm2 delete greetings-app-dev
-          }
-          catch {
-              Write-Output "DEV service not running, ignoring error."
-          }
+    - name: Stop existing DEV service (if any)
+      shell: powershell
+      run: |
+        Write-Output "Stopping DEV service (if running)..."
+        Set-Location "python-greetings"
+        # Piespiedām PowerShell izsaukt kļūdu, ja komanda neizdodas.
+        $ErrorActionPreference = 'Stop'
+        try {
+            pm2 delete greetings-app-dev
+        }
+        catch {
+            Write-Output "DEV service not found, ignoring error."
+        }
 
-      - name: Start DEV service
-        shell: powershell
-        run: |
-          Write-Output "Starting DEV service on port 7001..."
-          Set-Location "python-greetings"
-          pm2 start app.py --name greetings-app-dev -- --port 7001
+    - name: Start DEV service
+      shell: powershell
+      run: |
+        Write-Output "Starting DEV service on port 7001..."
+        Set-Location "python-greetings"
+        pm2 start app.py --name greetings-app-dev -- --port 7001
 
   tests-on-dev:
     name: Run tests on DEV Environment
