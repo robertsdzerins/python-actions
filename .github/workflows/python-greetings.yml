@@ -12,7 +12,7 @@ jobs:
     runs-on: [self-hosted]
     steps:
     - name: Echo Hello
-      run: echo "Hello, world!"
+      run: echo "Hello, world!!"
 
   install-pip-deps:
     name: Install Python Dependencies
