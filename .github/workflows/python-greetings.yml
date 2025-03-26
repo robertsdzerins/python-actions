@@ -20,7 +20,7 @@ jobs:
           path: python-greetings
       - name: Installing required dependencies...
         run: |
-          echo "Installing all required dependencies in python-greetings directory..."
+          echo "Installing all required dependencies in python-greetings directory...."
           cd python-greetings
           pip3 install -r requirements.txt || true
 
