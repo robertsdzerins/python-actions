@@ -70,7 +70,7 @@ jobs:
           cd course-js-api-framework
           npm run greetings greetings_dev || true
 
-  # ... (pievieno pārējus jobus ar līdzīgām izmaiņām)
+  # ... (pievieno pārējus jobus ar līdzīgām izmaiņām)..
 
   simple-test:
     name: Simple Test Job
