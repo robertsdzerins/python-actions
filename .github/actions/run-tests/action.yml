@@ -1,1 +1,30 @@
+name: 'Run API Tests'
+description: 'Runs API tests using JS test framework'
+inputs:
+  working-directory:
+    required: true
+  env-name:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Checkout Test framework repo
+      uses: actions/checkout@v4
+      with:
+        repository: 'mtararujs/course-js-api-framework'
+        path: ${{ inputs.working-directory }}
+
+    - name: Install Node dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Installing test framework dependencies..."
+        npm install
+
+    - name: Running tests on ${{ inputs.env-name }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Running tests on ${{ inputs.env-name }} environment..."
+        npm run greetings greetings_${{ inputs.env-name }}
 
