@@ -23,6 +23,6 @@ runs:
       working-directory: python-greetings
       shell: bash
       run: |
-        echo "Deploying to ${{ inputs.environment }} environment..."
+        echo "Deploying to ${{ inputs.environment }} environment.."
         pm2 delete greetings-app-${{ inputs.environment }} || true
         pm2 start app.py --name greetings-app-${{ inputs.environment }} -- --port ${{ inputs.port }}
