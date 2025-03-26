@@ -1,1 +1,246 @@
+name: Python Greetings Delivery Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  install-pip-deps:
+    name: Install Python Dependencies
+    runs-on: [self-hosted]
+    steps:
+      # 1. Izmanto pašreizējo repozitoriju (python-actions) – šeit glabājas tikai workflow definīcija
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      # 2. Klonē python-greetings repozitoriju uz mapi "python-greetings"
+      - name: Clone python-greetings repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/python-greetings
+          path: python-greetings
+
+      # 3. Instalē nepieciešamās Python atkarības
+      - name: Installing required dependencies...
+        run: |
+          echo "Installing all required dependencies in python-greetings directory..."
+          cd python-greetings
+          pip3 install -r requirements.txt
+
+  deploy-to-dev:
+    name: Deploy to DEV Environment
+    runs-on: [self-hosted]
+    needs: install-pip-deps
+    steps:
+      # 1. Checkout pašreizējā repozitorija 
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      # 2. Klonē python-greetings repozitoriju
+      - name: Clone python-greetings repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/python-greetings
+          path: python-greetings
+
+      # 3. Aptur esošo DEV servisu 
+      - name: Stop existing DEV service (if any)
+        run: |
+          echo "Stopping DEV service (if running)..."
+          cd python-greetings
+          pm2 delete greetings-app-dev || true
+
+      # 4. Startē DEV servisu ar portu 7001
+      - name: Start DEV service
+        run: |
+          echo "Starting DEV service on port 7001..."
+          cd python-greetings
+          pm2 start app.py --name greetings-app-dev -- --port 7001
+
+  tests-on-dev:
+    name: Run tests on DEV Environment
+    runs-on: [self-hosted]
+    needs: deploy-to-dev
+    steps:
+      # Checkout pašreizējā repozitorija (python-actions)
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      # Klonē testa repozitoriju 
+      - name: Clone course-js-api-framework repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/course-js-api-framework
+          path: course-js-api-framework
+
+      # 3. Instalē testu atkarības
+      - name: Install test dependencies for DEV
+        run: |
+          echo "Installing test dependencies in course-js-api-framework directory..."
+          cd course-js-api-framework
+          npm install
+
+      # 4. Izpilda DEV testus
+      - name: Run DEV tests
+        run: |
+          echo "Running DEV tests..."
+          cd course-js-api-framework
+          npm run greetings greetings_dev
+
+  deploy-to-staging:
+    name: Deploy to STAGING Environment
+    runs-on: [self-hosted]
+    needs: tests-on-dev
+    steps:
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      - name: Clone python-greetings repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/python-greetings
+          path: python-greetings
+
+      - name: Stop existing STAGING service (if any)
+        run: |
+          echo "Stopping STAGING service (if running)..."
+          cd python-greetings
+          pm2 delete greetings-app-staging || true
+
+      - name: Start STAGING service
+        run: |
+          echo "Starting STAGING service on port 7002..."
+          cd python-greetings
+          pm2 start app.py --name greetings-app-staging -- --port 7002
+
+  tests-on-staging:
+    name: Run tests on STAGING Environment
+    runs-on: [self-hosted]
+    needs: deploy-to-staging
+    steps:
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      - name: Clone course-js-api-framework repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/course-js-api-framework
+          path: course-js-api-framework
+
+      - name: Install test dependencies for STAGING
+        run: |
+          echo "Installing test dependencies for STAGING..."
+          cd course-js-api-framework
+          npm install
+
+      - name: Run STAGING tests
+        run: |
+          echo "Running STAGING tests..."
+          cd course-js-api-framework
+          npm run greetings greetings_staging
+
+  deploy-to-preprod:
+    name: Deploy to PREPROD Environment
+    runs-on: [self-hosted]
+    needs: tests-on-staging
+    steps:
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      - name: Clone python-greetings repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/python-greetings
+          path: python-greetings
+
+      - name: Stop existing PREPROD service (if any)
+        run: |
+          echo "Stopping PREPROD service (if running)..."
+          cd python-greetings
+          pm2 delete greetings-app-preprod || true
+
+      - name: Start PREPROD service
+        run: |
+          echo "Starting PREPROD service on port 7003..."
+          cd python-greetings
+          pm2 start app.py --name greetings-app-preprod -- --port 7003
+
+  tests-on-preprod:
+    name: Run tests on PREPROD Environment
+    runs-on: [self-hosted]
+    needs: deploy-to-preprod
+    steps:
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      - name: Clone course-js-api-framework repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/course-js-api-framework
+          path: course-js-api-framework
+
+      - name: Install test dependencies for PREPROD
+        run: |
+          echo "Installing test dependencies for PREPROD..."
+          cd course-js-api-framework
+          npm install
+
+      - name: Run PREPROD tests
+        run: |
+          echo "Running PREPROD tests..."
+          cd course-js-api-framework
+          npm run greetings greetings_preprod
+
+  deploy-to-prod:
+    name: Deploy to PROD Environment
+    runs-on: [self-hosted]
+    needs: tests-on-preprod
+    steps:
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      - name: Clone python-greetings repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/python-greetings
+          path: python-greetings
+
+      - name: Stop existing PROD service (if any)
+        run: |
+          echo "Stopping PROD service (if running)..."
+          cd python-greetings
+          pm2 delete greetings-app-prod || true
+
+      - name: Start PROD service
+        run: |
+          echo "Starting PROD service on port 7004..."
+          cd python-greetings
+          pm2 start app.py --name greetings-app-prod -- --port 7004
+
+  tests-on-prod:
+    name: Run tests on PROD Environment
+    runs-on: [self-hosted]
+    needs: deploy-to-prod
+    steps:
+      - name: Checkout pipeline repository (python-actions)
+        uses: actions/checkout@v4
+
+      - name: Clone course-js-api-framework repository
+        uses: actions/checkout@v4
+        with:
+          repository: mtararujs/course-js-api-framework
+          path: course-js-api-framework
+
+      - name: Install test dependencies for PROD
+        run: |
+          echo "Installing test dependencies for PROD..."
+          cd course-js-api-framework
+          npm install
+
+      - name: Run PROD tests
+        run: |
+          echo "Running PROD tests..."
+          cd course-js-api-framework
+          npm run greetings greetings_prod
 
