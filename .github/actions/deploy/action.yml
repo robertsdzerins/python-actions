@@ -21,9 +21,11 @@ runs:
 
     - name: Deploy to $env:INPUT_ENVIRONMENT environment
       working-directory: python-greetings
-      shell: pwsh
+      shell: powershell
       run: |
         Write-Output "Deploying to $env:INPUT_ENVIRONMENT environment..."
-        # Mēģinām dzēst esošo servisu; ja neeksistē, izvadam paziņojumu
-        pm2 delete "greetings-app-$env:INPUT_ENVIRONMENT" || Write-Output "Service not found"
+        pm2 delete "greetings-app-$env:INPUT_ENVIRONMENT"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Output "Service not found"
+        }
         pm2 start app.py --name "greetings-app-$env:INPUT_ENVIRONMENT" -- --port $env:INPUT_PORT
