@@ -19,13 +19,11 @@ runs:
         repository: mtararujs/python-greetings
         path: python-greetings
 
-    - name: Deploy to %INPUT_ENVIRONMENT% environment
+    - name: Deploy to $env:INPUT_ENVIRONMENT environment
       working-directory: python-greetings
-      shell: cmd
+      shell: pwsh
       run: |
-        echo Deploying to %INPUT_ENVIRONMENT% environment...
-        pm2 delete greetings-app-%INPUT_ENVIRONMENT%
-        if %errorlevel% neq 0 (
-          echo Service not found
-        )
-        pm2 start app.py --name greetings-app-%INPUT_ENVIRONMENT% -- --port %INPUT_PORT%
+        Write-Output "Deploying to $env:INPUT_ENVIRONMENT environment..."
+        # Mēģinām dzēst esošo servisu; ja neeksistē, izvadam paziņojumu
+        pm2 delete "greetings-app-$env:INPUT_ENVIRONMENT" || Write-Output "Service not found"
+        pm2 start app.py --name "greetings-app-$env:INPUT_ENVIRONMENT" -- --port $env:INPUT_PORT
